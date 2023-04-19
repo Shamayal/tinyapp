@@ -4,6 +4,9 @@ const PORT = 8080; // default port 8080
 
 app.set("view engine", "ejs"); // tells the Express app to use EJS as its templating engine
 
+// middleware which will make data from body of POST request readable
+app.use(express.urlencoded({ extended: true }));
+
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
