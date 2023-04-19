@@ -7,6 +7,18 @@ app.set("view engine", "ejs"); // tells the Express app to use EJS as its templa
 // middleware which will make data from body of POST request readable
 app.use(express.urlencoded({ extended: true }));
 
+// function to generate a random short URL ID
+function generateRandomString() {
+  const alphanumericCharacters = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUyVvWwXxYyZz0123456789';
+  let result = '';
+  for (let i = 1; i <= 6; i++) {
+    result += alphanumericCharacters.charAt(Math.floor(Math.random() * alphanumericCharacters.length));
+  }
+  return result;
+}
+
+console.log(generateRandomString());
+
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
