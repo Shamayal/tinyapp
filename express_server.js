@@ -60,6 +60,9 @@ app.get("/u/:id", (req, res) => {
   res.redirect(longURL);
 });
 
+// POST
+
+// adds new link to database and generates a random id
 app.post("/urls", (req, res) => {
   let longURL = req.body.longURL;
   let id = generateRandomString(); // generates short URL id
@@ -67,6 +70,15 @@ app.post("/urls", (req, res) => {
   console.log(urlDatabase);
   console.log(req.body); // Log the POST request body to the console
   res.redirect(`/urls/${id}`); // redirects to new page with new short url created
+});
+
+// delete url button
+app.post("/urls/:id/delete", (req, res) => {
+  let shortURL = req.params.id;
+  delete urlDatabase[shortURL];
+  res.redirect('/urls'); // redirects to urls_index page
+  console.log(urlDatabase);
+
 });
 
 app.listen(PORT, () => {
