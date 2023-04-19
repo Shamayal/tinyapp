@@ -26,7 +26,7 @@
         <h3>Edit</h3>
         <form method="POST" action="/urls/<%= id %>">
           <label for="editURL">New URL: </label>
-          <input type="text" name="editURL" placeholder="<%= longURL %>" />
+          <input type="text" name="editURL" value="<%= longURL %>" />
           <button type="submit" class="btn btn-primary">Submit</button>
         </form>
       </div>
