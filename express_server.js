@@ -72,13 +72,20 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${id}`); // redirects to new page with new short url created
 });
 
+// edit url button
+app.post("/urls/:id", (req, res) => {
+  let id = req.params.id;
+  let editURL = req.body.editURL;
+  urlDatabase[id] = editURL;
+  res.redirect(`/urls/${id}`); // redirects to urls_show page
+  console.log(urlDatabase);
+});
+
 // delete url button
 app.post("/urls/:id/delete", (req, res) => {
-  let shortURL = req.params.id;
-  delete urlDatabase[shortURL];
+  delete urlDatabase[req.params.id];
   res.redirect('/urls'); // redirects to urls_index page
   console.log(urlDatabase);
-
 });
 
 app.listen(PORT, () => {
