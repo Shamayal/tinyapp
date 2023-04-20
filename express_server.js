@@ -1,4 +1,5 @@
 const express = require("express");
+const cookieParser = require('cookie-parser')
 const app = express();
 const PORT = 8080; // default port 8080
 
@@ -6,6 +7,7 @@ app.set("view engine", "ejs"); // tells the Express app to use EJS as its templa
 
 // middleware which will make data from body of POST request readable
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser())
 
 // function to generate a random short URL ID
 function generateRandomString() {
@@ -37,16 +39,20 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const username = req.cookies["username"];
+  const templateVars = { urls: urlDatabase, username };
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const username = req.cookies["username"];
+  const templateVars = { username }
+  res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:id", (req, res) => {
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id] };
+  const username = req.cookies["username"];
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], username };
   res.render("urls_show", templateVars);
 });
 
@@ -58,6 +64,14 @@ app.get("/u/:id", (req, res) => {
     res.status(404).send(`Error 404: The URL does not exist.`);
   }
   res.redirect(longURL);
+});
+
+app.get("/urls", (req, res) => {
+  const templateVars = {
+    username: req.cookies["username"],
+    // ... any other vars
+  };
+  res.render("urls_index", templateVars);
 });
 
 // POST
