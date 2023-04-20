@@ -94,6 +94,13 @@ app.get("/register", (req, res) => {
   res.render("urls_register", templateVars);
 });
 
+// login page
+app.get("/login", (req, res) => {
+  const user = req.cookies["user_id"];
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user: users[user] };
+  res.render("urls_login", templateVars);
+});
+
 // POST
 
 // adds new link to database and generates a random id
