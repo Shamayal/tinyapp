@@ -66,6 +66,13 @@ app.get("/u/:id", (req, res) => {
   res.redirect(longURL);
 });
 
+// registration page
+app.get("/register", (req, res) => {
+  const username = req.cookies["username"];
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], username };
+  res.render("urls_register", templateVars);
+});
+
 // POST
 
 // adds new link to database and generates a random id
