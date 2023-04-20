@@ -52,20 +52,20 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const username = req.cookies["username"];
-  const templateVars = { urls: urlDatabase, username };
+  const user = req.cookies["user_id"];
+  const templateVars = { urls: urlDatabase, user: users[user] };
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  const username = req.cookies["username"];
-  const templateVars = { username }
+  const user = req.cookies["user_id"];
+  const templateVars = { user: users[user] }
   res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:id", (req, res) => {
-  const username = req.cookies["username"];
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], username };
+  const user = req.cookies["user_id"];
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user: users[user] };
   res.render("urls_show", templateVars);
 });
 
@@ -81,8 +81,8 @@ app.get("/u/:id", (req, res) => {
 
 // registration page
 app.get("/register", (req, res) => {
-  const username = req.cookies["username"];
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], username };
+  const user = req.cookies["user_id"];
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user: users[user] };
   res.render("urls_register", templateVars);
 });
 
@@ -119,25 +119,25 @@ app.post("/urls/:id/delete", (req, res) => {
 
 // login button
 app.post("/login", (req, res) => {
-  res.cookie('username', req.body.username);
+  res.cookie('user_id', req.body.id);
   res.redirect('/urls'); // redirects to urls_index page
 });
 
 // logout button
 app.post("/logout", (req, res) => {
-  res.clearCookie('username') // clears the username cookie
+  res.clearCookie('user_id') // clears the username cookie
   res.redirect('/urls'); // redirects to urls_index page
 });
 
 // registration form data
 app.post("/register", (req, res) => {
-  let userID = generateRandomString();
+  let userID = generateRandomString(); // creates new user ID
   users[userID] = {
     id: userID,
     email: req.body.email,
     password: req.body.password
   };
-  res.cookie('userID', users[userID]);
+  res.cookie('user_id', userID);
   console.log(users);
   res.redirect('/urls'); // redirects to urls_index page
 });
