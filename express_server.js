@@ -66,14 +66,6 @@ app.get("/u/:id", (req, res) => {
   res.redirect(longURL);
 });
 
-app.get("/urls", (req, res) => {
-  const templateVars = {
-    username: req.cookies["username"],
-    // ... any other vars
-  };
-  res.render("urls_index", templateVars);
-});
-
 // POST
 
 // adds new link to database and generates a random id
@@ -109,7 +101,12 @@ app.post("/urls/:id/delete", (req, res) => {
 app.post("/login", (req, res) => {
   res.cookie('username', req.body.username);
   res.redirect('/urls'); // redirects to urls_index page
-  console.log(req.body);
+});
+
+// logout button
+app.post("/logout", (req, res) => {
+  res.clearCookie('username') // clears the username cookie
+  res.redirect('/urls'); // redirects to urls_index page
 });
 
 app.listen(PORT, () => {
