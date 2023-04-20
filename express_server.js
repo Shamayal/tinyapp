@@ -68,7 +68,12 @@ app.get("/urls", (req, res) => {
 app.get("/urls/new", (req, res) => {
   const user = req.cookies["user_id"];
   const templateVars = { user: users[user] };
-  res.render("urls_new", templateVars);
+
+  if (!user) {
+    res.redirect(`/login`); // user not logged in, redirect to /login
+  } else {
+    res.render("urls_new", templateVars);
+  }
 });
 
 app.get("/urls/:id", (req, res) => {
@@ -91,14 +96,24 @@ app.get("/u/:id", (req, res) => {
 app.get("/register", (req, res) => {
   const user = req.cookies["user_id"];
   const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user: users[user] };
-  res.render("urls_register", templateVars);
+
+  if (user) {
+    res.redirect(`/urls`); // redirect to /urls if user logged in
+  } else {
+    res.render("urls_register", templateVars);
+  }
 });
 
 // login page
 app.get("/login", (req, res) => {
   const user = req.cookies["user_id"];
   const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user: users[user] };
-  res.render("urls_login", templateVars);
+  
+  if (user) {
+    res.redirect(`/urls`); // redirect to /urls if user logged in
+  } else {
+    res.render("urls_login", templateVars);
+  }
 });
 
 // POST
