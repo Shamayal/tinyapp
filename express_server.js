@@ -26,6 +26,19 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const users = {
+  userRandomID: {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur",
+  },
+  user2RandomID: {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk",
+  },
+};
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -113,6 +126,19 @@ app.post("/login", (req, res) => {
 // logout button
 app.post("/logout", (req, res) => {
   res.clearCookie('username') // clears the username cookie
+  res.redirect('/urls'); // redirects to urls_index page
+});
+
+// registration form data
+app.post("/register", (req, res) => {
+  let userID = generateRandomString();
+  users[userID] = {
+    id: userID,
+    email: req.body.email,
+    password: req.body.password
+  };
+  res.cookie('userID', users[userID]);
+  console.log(users);
   res.redirect('/urls'); // redirects to urls_index page
 });
 
