@@ -87,7 +87,7 @@ app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[id];
 
   if (!longURL) {
-    res.status(404).send(`Error 404: The URL does not exist.`);
+    res.status(404).send(`Error 404: The URL does not exist in our database.`);
   }
   res.redirect(longURL);
 });
@@ -120,14 +120,19 @@ app.get("/login", (req, res) => {
 
 // adds new link to database and generates a random id
 app.post("/urls", (req, res) => {
-  let longURL = req.body.longURL;
-  let id = generateRandomString(); // generates short URL id
-  urlDatabase[id] = longURL; // saves key-value pair in urlDatabase
-  
-  console.log(urlDatabase);
-  console.log(req.body); // Log the POST request body to the console
-  
-  res.redirect(`/urls/${id}`); // redirects to new page with new short url created
+  const user = req.cookies["user_id"];
+
+  if (user) {
+    let longURL = req.body.longURL;
+    let id = generateRandomString(); // generates short URL id
+    urlDatabase[id] = longURL; // saves key-value pair in urlDatabase
+    res.redirect(`/urls/${id}`); // redirects to new page with new short url created
+
+    console.log(urlDatabase);
+    console.log(req.body); // Log the POST request body to the console
+  } else { // if user not logged in, respond with message in command line
+    res.status(401).send('Unauthorized request. Please login to shorten URLs.');
+  }
 });
 
 // edit url button
