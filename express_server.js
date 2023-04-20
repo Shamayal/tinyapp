@@ -67,8 +67,10 @@ app.post("/urls", (req, res) => {
   let longURL = req.body.longURL;
   let id = generateRandomString(); // generates short URL id
   urlDatabase[id] = longURL; // saves key-value pair in urlDatabase
+  
   console.log(urlDatabase);
   console.log(req.body); // Log the POST request body to the console
+  
   res.redirect(`/urls/${id}`); // redirects to new page with new short url created
 });
 
@@ -85,7 +87,15 @@ app.post("/urls/:id", (req, res) => {
 app.post("/urls/:id/delete", (req, res) => {
   delete urlDatabase[req.params.id];
   res.redirect('/urls'); // redirects to urls_index page
+  
   console.log(urlDatabase);
+});
+
+// login button
+app.post("/login", (req, res) => {
+  res.cookie('username', req.body.username);
+  res.redirect('/urls'); // redirects to urls_index page
+  console.log(req.body);
 });
 
 app.listen(PORT, () => {
