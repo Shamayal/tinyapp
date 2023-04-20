@@ -1,5 +1,5 @@
 const express = require("express");
-const cookieParser = require('cookie-parser')
+const cookieParser = require('cookie-parser');
 const app = express();
 const PORT = 8080; // default port 8080
 
@@ -7,19 +7,17 @@ app.set("view engine", "ejs"); // tells the Express app to use EJS as its templa
 
 // middleware which will make data from body of POST request readable
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser())
+app.use(cookieParser());
 
 // function to generate a random short URL ID
-function generateRandomString() {
+const generateRandomString = () => {
   const alphanumericCharacters = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUyVvWwXxYyZz0123456789';
   let result = '';
   for (let i = 1; i <= 6; i++) {
     result += alphanumericCharacters.charAt(Math.floor(Math.random() * alphanumericCharacters.length));
   }
   return result;
-}
-
-console.log(generateRandomString());
+};
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -37,6 +35,16 @@ const users = {
     email: "user2@example.com",
     password: "dishwasher-funk",
   },
+};
+
+// look up user by email address
+const getUserByEmail = function(email, users) {
+  for (let user in users) {
+    if (users[user].email === email) {
+      return users[user];
+    }
+  }
+  return false;
 };
 
 app.get("/", (req, res) => {
@@ -59,7 +67,7 @@ app.get("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   const user = req.cookies["user_id"];
-  const templateVars = { user: users[user] }
+  const templateVars = { user: users[user] };
   res.render("urls_new", templateVars);
 });
 
@@ -125,21 +133,33 @@ app.post("/login", (req, res) => {
 
 // logout button
 app.post("/logout", (req, res) => {
-  res.clearCookie('user_id') // clears the username cookie
+  res.clearCookie('user_id'); // clears the username cookie
   res.redirect('/urls'); // redirects to urls_index page
 });
 
 // registration form data
 app.post("/register", (req, res) => {
-  let userID = generateRandomString(); // creates new user ID
-  users[userID] = {
-    id: userID,
-    email: req.body.email,
-    password: req.body.password
-  };
-  res.cookie('user_id', userID);
+ 
+  // check if email or password are empty strings
+  if ((!req.body.email) || (!req.body.password)) {
+    res.status(400).send('Error 400: Please enter a valid username or password.');
+  }
+
+  // check if the user exists
+  if (getUserByEmail(req.body.email, users)) { // user exists, send error
+    res.status(400).send('Error 400: An account with the email already exists. Please enter a new email.');
+  } else { // user does not exist, create a new user
+    let userID = generateRandomString(); // creates new user ID
+    users[userID] = {
+      id: userID,
+      email: req.body.email,
+      password: req.body.password
+    };
+    res.cookie('user_id', userID);
+    console.log(users);
+    res.redirect('/urls'); // redirects to urls_index page
+  }
   console.log(users);
-  res.redirect('/urls'); // redirects to urls_index page
 });
 
 app.listen(PORT, () => {
