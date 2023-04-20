@@ -20,11 +20,11 @@
     <%- include('partials/_header') %>
     <main style="margin: 1em;">
       <h4>Welcome Back!</h4>
-      <h3>Login with your Email and Password</h3>
+      <h3>Login</h3>
       <form  method="POST" action="/login">
         <div class="form-group mb-2">
           <!-- Email Form -->
-          <label for="email">Email: </label>
+          <label for="email">Email Address</label>
           <input
             class="form-inline"
             type="email"
@@ -34,7 +34,7 @@
         </div>
         <div class="form-group mb-2">
           <!-- Password Form -->
-          <label for="password">Password: </label>
+          <label for="password">Password</label>
           <input
             class="form-inline"
             type="password"
@@ -43,7 +43,7 @@
           />
         </div>
         <!-- Login Button -->
-        <button type="submit" class="btn btn-success">Login</button>
+        <button type="submit" class="btn btn-primary">Login</button>
       </form>
     </main>
     <!-- Bootstrap JS -->

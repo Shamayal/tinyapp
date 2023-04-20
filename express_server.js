@@ -134,14 +134,25 @@ app.post("/urls/:id/delete", (req, res) => {
 
 // login button
 app.post("/login", (req, res) => {
-  res.cookie('user_id', req.body.id);
-  res.redirect('/urls'); // redirects to urls_index page
+  // check if email is found in database
+  if (getUserByEmail(req.body.email, users)) { // true, check if password matches
+    let user = getUserByEmail(req.body.email, users);
+    if (req.body.password === user.password) { // happy path, password matches
+      let userID = getUserByEmail(req.body.email, users).id;
+      res.cookie('user_id', userID);
+      res.redirect('/urls'); // redirects to urls_index page
+    } else { // incorrect password
+      res.status(403).send('Error 403: Incorrect password. Please try again.');
+    }
+  } else { // email can't be found
+    res.status(403).send('Error 403: The user does not exist. Please register for a new account.');
+  }
 });
 
 // logout button
 app.post("/logout", (req, res) => {
-  res.clearCookie('user_id'); // clears the username cookie
-  res.redirect('/urls'); // redirects to urls_index page
+  res.clearCookie('user_id'); // clears the user_id cookie
+  res.redirect('/login'); // redirects to urls_index page
 });
 
 // registration form data
@@ -149,7 +160,7 @@ app.post("/register", (req, res) => {
  
   // check if email or password are empty strings
   if ((!req.body.email) || (!req.body.password)) {
-    res.status(400).send('Error 400: Please enter a valid username or password.');
+    res.status(400).send('Error 400: Please enter a valid email or password.');
   }
 
   // check if the user exists
