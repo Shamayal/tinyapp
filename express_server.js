@@ -145,28 +145,6 @@ app.get("/login", (req, res) => {
 
 // POST
 
-// // adds new link to database and generates a random id
-// app.post("/urls", (req, res) => {
-//   const user = req.session["user_id"];
-
-//   if (user) {
-//     let longURL = req.body.longURL;
-//     let id = generateRandomString(); // generates short URL id
-
-//     urlDatabase[id] = // saves key-value pair in urlDatabase
-//     {
-//       longURL,
-//       userID: user,
-//     }
-//     res.redirect(`/urls/${id}`); // redirects to new page with new short url created
-
-//     console.log('urlDatabase' + urlDatabase);
-//     console.log('req.body' + req.body); // Log the POST request body to the console
-//   } else { // if user not logged in, respond with message in command line
-//     res.status(401).send('Error 401: Unauthorized request. Please login to shorten URLs.');
-//   }
-// });
-
 // adds new link to database and generates a random id
 app.post("/urls", (req, res) => {
   const user = req.session["user_id"];
@@ -175,6 +153,7 @@ app.post("/urls", (req, res) => {
     let longURL = req.body.longURL;
     let id = generateRandomString(); // generates short URL id
     for (let shortURL in urlDatabase) {
+      // if url is already linked to the user, show error
       if (urlDatabase[shortURL].longURL === longURL && urlDatabase[shortURL].userID === user) {
         res.status(400).send('Error 400: You have already created a short URL for this link.');
       } else {
