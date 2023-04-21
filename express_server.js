@@ -52,7 +52,7 @@ const users = {
   },
   aJ48lW: {
     id: "aJ48lW",
-    email: "user3@example.com",
+    email: "example@gmail.com",
     password: "hello-world123*",
   }
 };
@@ -66,6 +66,18 @@ const getUserByEmail = function(email, users) {
   }
   return false;
 };
+
+// returns short and long URLs associated with the logged-in user
+const urlsForUser = function(id) {
+ let userURLs = {};
+ for (let tinyLink in urlDatabase) {
+  if (urlDatabase[tinyLink].userID === id) {
+    userURLs[tinyLink] = urlDatabase[tinyLink].longURL;
+  }
+ }
+ console.log(userURLs);
+ return userURLs;
+}
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -81,8 +93,13 @@ app.get("/hello", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const user = req.cookies["user_id"];
-  const templateVars = { urls: urlDatabase, user: users[user] };
-  res.render("urls_index", templateVars);
+  const templateVars = { urls: urlsForUser(user), user: users[user] };
+
+  if (user) { // displays links associated with user cookie
+    res.render("urls_index", templateVars);
+  } else {
+    res.status(401).send('Error 401: Please login or register to view URLs.'); // error message to display
+  }
 });
 
 app.get("/urls/new", (req, res) => {
@@ -98,8 +115,15 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:id", (req, res) => {
   const user = req.cookies["user_id"];
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id].longURL, user: users[user] };
-  res.render("urls_show", templateVars);
+
+  //const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id].longURL, user: users[user] };
+  const templateVars = { urls: urlsForUser(user), user: users[user], id: req.params.id , longURL: urlsForUser(user)[req.params.id]};
+
+  if (user) { // displays link
+    res.render("urls_show", templateVars);
+  } else {
+    res.status(401).send('Error 401: You are not authorized to view or edit other users\' URLs.'); // error message to display
+  }
 });
 
 app.get("/u/:id", (req, res) => {
@@ -151,7 +175,7 @@ app.post("/urls", (req, res) => {
     console.log(urlDatabase);
     console.log(req.body); // Log the POST request body to the console
   } else { // if user not logged in, respond with message in command line
-    res.status(401).send('Unauthorized request. Please login to shorten URLs.');
+    res.status(401).send('Error 401: Unauthorized request. Please login to shorten URLs.');
   }
 });
 
