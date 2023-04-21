@@ -1,3 +1,5 @@
+const { urlDatabase } = require('./express_server');
+
 // function to generate a random short URL ID
 const generateRandomString = () => {
   const alphanumericCharacters = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUyVvWwXxYyZz0123456789';
