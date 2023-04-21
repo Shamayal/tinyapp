@@ -223,7 +223,7 @@ app.post("/register", (req, res) => {
 
   // check if the user exists
   if (getUserByEmail(req.body.email, users)) { // user exists, send error
-    res.status(400).send('Error 400: An account with the email already exists. Please enter a new email.');
+    res.status(400).send('Error 400: An account with the email already exists. Please enter another email.');
   } else { // user does not exist, create a new user
     let userID = generateRandomString(); // creates new user ID
     users[userID] = {

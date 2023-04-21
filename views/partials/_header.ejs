@@ -19,7 +19,7 @@
       </div>
     </div>
     <!-- login and logout button with user email display -->
-    <% if (user){ %> <h5>Logged in as: <%= user.email %>!</h5>
+    <% if (user){ %> <h5 style="margin: 0.5em;">Logged in as: <%= user.email %>!</h5>
       <form method="POST" action="/logout" class="form-inline">
         <button type="submit" class="btn btn-outline-dark">Logout</button>
       </form> 
