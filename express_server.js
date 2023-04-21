@@ -171,10 +171,10 @@ app.post("/urls/:id", (req, res) => {
   const user = req.session["user_id"];
   let id = req.params.id;
 
-  if (urlsForUser(user, urlDatabase).id) {
+  if ((urlsForUser(user, urlDatabase))[id]) {
     let editURL = req.body.editURL;
     urlDatabase[id] = {longURL: editURL, userID: user};
-    res.redirect(`/urls/${id}`); // redirects to urls_show page
+    res.redirect('/urls'); // redirects to urls_index page
     console.log('urlDatabase in /urls/:id' + urlDatabase);
   } else {
     res.status(401).send('Error 401: You are not authorized to edit this URL.'); // error message to display
