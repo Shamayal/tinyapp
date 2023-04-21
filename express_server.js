@@ -4,7 +4,6 @@ const app = express();
 const PORT = 8080; // default port 8080
 const bcrypt = require("bcryptjs");
 const { generateRandomString, getUserByEmail, urlsForUser } = require('./helpers');
-const { should } = require("chai");
 
 
 app.set("view engine", "ejs"); // tells the Express app to use EJS as its templating engine
@@ -46,7 +45,7 @@ const users = {
     id: "WhnG77",
     email: "testing@outlook.com",
     password: "$2a$10$J1A/brB65/ysOhMixT5dtegyxLbJ40QZRKLNUkyYr5mWQzi8pi6vO", //asdf99%
-  }, 
+  },
   'ydNGzw': {
     id: "ydNGzw",
     email: "example@gmail.com",
@@ -61,9 +60,8 @@ const users = {
 
 app.get("/", (req, res) => {
   const user = req.session["user_id"];
-  const templateVars = { urls: urlsForUser(user, urlDatabase), user: users[user] };
 
-  if (user) { 
+  if (user) {
     res.redirect(`/urls`);
   } else {
     res.redirect(`/login`);
@@ -94,7 +92,7 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:id", (req, res) => {
   const user = req.session["user_id"];
-  const userURLs = urlsForUser(user, urlDatabase)
+  const userURLs = urlsForUser(user, urlDatabase);
   const templateVars = { urls: userURLs, user: users[user], id: req.params.id , longURL: userURLs[req.params.id]};
 
   if (user) {
@@ -156,7 +154,7 @@ app.post("/urls", (req, res) => {
     {
       longURL,
       userID: user,
-    }
+    };
     res.redirect(`/urls/${id}`); // redirects to new page with new short url created
 
     console.log('urlDatabase' + urlDatabase);
