@@ -3,6 +3,7 @@ const cookieSession = require('cookie-session');
 const app = express();
 const PORT = 8080; // default port 8080
 const bcrypt = require("bcryptjs");
+const { generateRandomString, getUserByEmail, urlsForUser } = require('./helpers');
 
 
 app.set("view engine", "ejs"); // tells the Express app to use EJS as its templating engine
@@ -13,16 +14,6 @@ app.use(cookieSession({
   name: 'session',
   keys: ["userID"]
 }));
-
-// function to generate a random short URL ID
-const generateRandomString = () => {
-  const alphanumericCharacters = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUyVvWwXxYyZz0123456789';
-  let result = '';
-  for (let i = 1; i <= 6; i++) {
-    result += alphanumericCharacters.charAt(Math.floor(Math.random() * alphanumericCharacters.length));
-  }
-  return result;
-};
 
 const urlDatabase = {
   b6UTxQ: {
@@ -55,28 +46,6 @@ const users = {
     email: "example@gmail.com",
     password: "$2a$10$a6duSfQtisyJj98k4PL/oe49DsVPkN1Wm9OG.tVfCMz0MWZN15x8i", //hello-world123*
   }
-};
-
-// look up user by email address
-const getUserByEmail = function(email, users) {
-  for (let user in users) {
-    if (users[user].email === email) {
-      return users[user];
-    }
-  }
-  return false;
-};
-
-// returns short and long URLs associated with the logged-in user
-const urlsForUser = function(id) {
-  let userURLs = {};
-  for (let tinyLink in urlDatabase) {
-    if (urlDatabase[tinyLink].userID === id) {
-      userURLs[tinyLink] = urlDatabase[tinyLink].longURL;
-    }
-  }
-  console.log(userURLs);
-  return userURLs;
 };
 
 app.get("/", (req, res) => {
