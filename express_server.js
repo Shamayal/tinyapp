@@ -61,6 +61,7 @@ const users = {
 app.get("/", (req, res) => {
   const user = req.session["user_id"];
 
+  // if logged in, redirect to main page, otherwise redirect to login page
   if (user) {
     res.redirect(`/urls`);
   } else {
@@ -96,13 +97,13 @@ app.get("/urls/:id", (req, res) => {
   const templateVars = { urls: userURLs, user: users[user], id: req.params.id , longURL: userURLs[req.params.id]};
 
   if (user) {
-    if (userURLs[req.params.id]) { // displays link
+    if (userURLs[req.params.id]) { // if logged in, display link and edit form
       res.render("urls_show", templateVars);
     } else {
-      res.status(401).send('Error 401: You are not authorized to view or edit other users\' URLs.'); // error message to display
+      res.status(401).send('Error 401: You are not authorized to view or edit other users\' URLs.'); // error message if wrong user
     }
   } else {
-    res.status(401).send('Error 401: Please login to view or edit URLs'); // error message to display
+    res.status(401).send('Error 401: Please login to view or edit URLs'); // error message to display if not logged in
   }
 });
 
@@ -113,7 +114,7 @@ app.get("/u/:id", (req, res) => {
   if (!longURL) {
     res.status(404).send(`Error 404: The URL does not exist in our database.`);
   }
-  res.redirect(longURL);
+  res.redirect(longURL); // redirect to website
 });
 
 // registration page
@@ -157,8 +158,6 @@ app.post("/urls", (req, res) => {
     };
     res.redirect(`/urls/${id}`); // redirects to new page with new short url created
 
-    console.log('urlDatabase' + urlDatabase);
-    console.log('req.body' + req.body); // Log the POST request body to the console
   } else { // if user not logged in, respond with message in command line
     res.status(401).send('Error 401: Unauthorized request. Please login to shorten URLs.');
   }
@@ -169,11 +168,10 @@ app.post("/urls/:id", (req, res) => {
   const user = req.session["user_id"];
   let id = req.params.id;
 
-  if ((urlsForUser(user, urlDatabase))[id]) {
+  if ((urlsForUser(user, urlDatabase))[id]) { // checks if user has authority to edit url
     let editURL = req.body.editURL;
     urlDatabase[id] = {longURL: editURL, userID: user};
     res.redirect('/urls'); // redirects to urls_index page
-    console.log('urlDatabase in /urls/:id' + urlDatabase);
   } else {
     res.status(401).send('Error 401: You are not authorized to edit this URL.'); // error message to display
   }
@@ -184,10 +182,9 @@ app.post("/urls/:id/delete", (req, res) => {
   const user = req.session["user_id"];
   let id = req.params.id;
 
-  if (urlsForUser(user, urlDatabase)[id]) {
+  if (urlsForUser(user, urlDatabase)[id]) { // checks if user has authority to edit url
     delete urlDatabase[id];
     res.redirect('/urls'); // redirects to urls_index page
-    console.log(urlDatabase);
   } else {
     res.status(401).send('Error 401: You are not authorized to delete this URL.'); // error message to display
   }
@@ -235,10 +232,8 @@ app.post("/register", (req, res) => {
       password: bcrypt.hashSync(req.body.password, 10)
     };
     req.session["user_id"] = userID;
-    console.log(users);
     res.redirect('/urls'); // redirects to urls_index page
   }
-  console.log(users);
 });
 
 app.listen(PORT, () => {
