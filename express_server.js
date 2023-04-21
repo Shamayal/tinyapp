@@ -4,6 +4,7 @@ const app = express();
 const PORT = 8080; // default port 8080
 const bcrypt = require("bcryptjs");
 const { generateRandomString, getUserByEmail, urlsForUser } = require('./helpers');
+const { should } = require("chai");
 
 
 app.set("view engine", "ejs"); // tells the Express app to use EJS as its templating engine
@@ -18,15 +19,15 @@ app.use(cookieSession({
 const urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.tsn.ca",
-    userID: "88SAhz",
+    userID: "WhnG77",
   },
   i3BoGr: {
     longURL: "https://www.google.ca",
-    userID: "88SAhz",
+    userID: "ydNGzw",
   },
   b2xVn2: {
     longURL: "http://www.lighthouselabs.ca",
-    userID: "88SAhz",
+    userID: "ydNGzw",
   }
 };
 
@@ -41,10 +42,20 @@ const users = {
     email: "user2@example.com",
     password: "dishwasher-funk",
   },
-  '88SAhz': {
-    id: "88SAhz",
+  'WhnG77': {
+    id: "WhnG77",
+    email: "testing@outlook.com",
+    password: "$2a$10$J1A/brB65/ysOhMixT5dtegyxLbJ40QZRKLNUkyYr5mWQzi8pi6vO", //asdf99%
+  }, 
+  'ydNGzw': {
+    id: "ydNGzw",
     email: "example@gmail.com",
-    password: "$2a$10$a6duSfQtisyJj98k4PL/oe49DsVPkN1Wm9OG.tVfCMz0MWZN15x8i", //hello-world123*
+    password: "$2a$10$WVkb40fs3OL3NTrNHFxWK.8DahSqK4FBRbqC51sQ7B46OXxOZz0Ei", //hello-world123*
+  },
+  'YQCLev': {
+    id: "ydNGzw",
+    email: "project@gmail.com",
+    password: "$2a$10$Z/yJcbNZyn1u77d0oeNU3ebOq/2UzYe3tMf.HqId40ZFN88vgY4vG", //1
   }
 };
 
@@ -62,7 +73,7 @@ app.get("/hello", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const user = req.session["user_id"];
-  const templateVars = { urls: urlsForUser(user), user: users[user] };
+  const templateVars = { urls: urlsForUser(user, urlDatabase), user: users[user] };
 
   if (user) { // displays links associated with user cookie
     res.render("urls_index", templateVars);
@@ -84,12 +95,11 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:id", (req, res) => {
   const user = req.session["user_id"];
-
-  //const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id].longURL, user: users[user] };
-  const templateVars = { urls: urlsForUser(user), user: users[user], id: req.params.id , longURL: urlsForUser(user)[req.params.id]};
+  const userURLs = urlsForUser(user, urlDatabase)
+  const templateVars = { urls: userURLs, user: users[user], id: req.params.id , longURL: userURLs[req.params.id]};
 
   if (user) {
-    if (urlsForUser(user)[req.params.id]) { // displays link
+    if (userURLs[req.params.id]) { // displays link
       res.render("urls_show", templateVars);
     } else {
       res.status(401).send('Error 401: You are not authorized to view or edit other users\' URLs.'); // error message to display
@@ -135,6 +145,28 @@ app.get("/login", (req, res) => {
 
 // POST
 
+// // adds new link to database and generates a random id
+// app.post("/urls", (req, res) => {
+//   const user = req.session["user_id"];
+
+//   if (user) {
+//     let longURL = req.body.longURL;
+//     let id = generateRandomString(); // generates short URL id
+
+//     urlDatabase[id] = // saves key-value pair in urlDatabase
+//     {
+//       longURL,
+//       userID: user,
+//     }
+//     res.redirect(`/urls/${id}`); // redirects to new page with new short url created
+
+//     console.log('urlDatabase' + urlDatabase);
+//     console.log('req.body' + req.body); // Log the POST request body to the console
+//   } else { // if user not logged in, respond with message in command line
+//     res.status(401).send('Error 401: Unauthorized request. Please login to shorten URLs.');
+//   }
+// });
+
 // adds new link to database and generates a random id
 app.post("/urls", (req, res) => {
   const user = req.session["user_id"];
@@ -142,11 +174,21 @@ app.post("/urls", (req, res) => {
   if (user) {
     let longURL = req.body.longURL;
     let id = generateRandomString(); // generates short URL id
-    urlDatabase[id] = {longURL: longURL}; // saves key-value pair in urlDatabase
+    for (let shortURL in urlDatabase) {
+      if (urlDatabase[shortURL].longURL === longURL && urlDatabase[shortURL].userID === user) {
+        res.status(400).send('Error 400: You have already created a short URL for this link.');
+      } else {
+        urlDatabase[id] = // saves key-value pair in urlDatabase
+        {
+          longURL,
+          userID: user,
+        }
+      }
+    }
     res.redirect(`/urls/${id}`); // redirects to new page with new short url created
 
-    console.log(urlDatabase);
-    console.log(req.body); // Log the POST request body to the console
+    console.log('urlDatabase' + urlDatabase);
+    console.log('req.body' + req.body); // Log the POST request body to the console
   } else { // if user not logged in, respond with message in command line
     res.status(401).send('Error 401: Unauthorized request. Please login to shorten URLs.');
   }
@@ -157,11 +199,11 @@ app.post("/urls/:id", (req, res) => {
   const user = req.session["user_id"];
   let id = req.params.id;
 
-  if (urlsForUser(user).id) {
+  if (urlsForUser(user, urlDatabase).id) {
     let editURL = req.body.editURL;
     urlDatabase[id] = {longURL: editURL, userID: user};
     res.redirect(`/urls/${id}`); // redirects to urls_show page
-    console.log(urlDatabase);
+    console.log('urlDatabase in /urls/:id' + urlDatabase);
   } else {
     res.status(401).send('Error 401: You are not authorized to edit this URL.'); // error message to display
   }
@@ -172,7 +214,7 @@ app.post("/urls/:id/delete", (req, res) => {
   const user = req.session["user_id"];
   let id = req.params.id;
 
-  if (urlsForUser(user)[id]) {
+  if (urlsForUser(user, urlDatabase)[id]) {
     delete urlDatabase[id];
     res.redirect('/urls'); // redirects to urls_index page
     console.log(urlDatabase);

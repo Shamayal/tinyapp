@@ -1,5 +1,3 @@
-const { urlDatabase } = require('./express_server');
-
 // function to generate a random short URL ID
 const generateRandomString = () => {
   const alphanumericCharacters = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUyVvWwXxYyZz0123456789';
@@ -21,14 +19,13 @@ const getUserByEmail = function(email, users) {
 };
 
 // returns short and long URLs associated with the logged-in user
-const urlsForUser = function(id) {
+const urlsForUser = function(id, data) {
   let userURLs = {};
-  for (let tinyLink in urlDatabase) {
-    if (urlDatabase[tinyLink].userID === id) {
-      userURLs[tinyLink] = urlDatabase[tinyLink].longURL;
+  for (let tinyLink in data) {
+    if (data[tinyLink].userID === id) {
+      userURLs[tinyLink] = data[tinyLink].longURL;
     }
   }
-  console.log(userURLs);
   return userURLs;
 };
 
