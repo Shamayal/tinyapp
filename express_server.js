@@ -19,9 +19,24 @@ const generateRandomString = () => {
   return result;
 };
 
+// const urlDatabase = {
+//   "b2xVn2": "http://www.lighthouselabs.ca",
+//   "9sm5xK": "http://www.google.com"
+// };
+
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "aJ48lW",
+  },
+  i3BoGr: {
+    longURL: "https://www.google.ca",
+    userID: "aJ48lW",
+  },
+  b2xVn2: {
+    longURL: "http://www.lighthouselabs.ca",
+    userID: "aJ48lW",
+  }
 };
 
 const users = {
@@ -35,6 +50,11 @@ const users = {
     email: "user2@example.com",
     password: "dishwasher-funk",
   },
+  aJ48lW: {
+    id: "aJ48lW",
+    email: "user3@example.com",
+    password: "hello-world123*",
+  }
 };
 
 // look up user by email address
@@ -78,13 +98,13 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:id", (req, res) => {
   const user = req.cookies["user_id"];
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user: users[user] };
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id].longURL, user: users[user] };
   res.render("urls_show", templateVars);
 });
 
 app.get("/u/:id", (req, res) => {
   const id = req.params.id;
-  const longURL = urlDatabase[id];
+  const longURL = urlDatabase[id].longURL;
 
   if (!longURL) {
     res.status(404).send(`Error 404: The URL does not exist in our database.`);
@@ -95,7 +115,7 @@ app.get("/u/:id", (req, res) => {
 // registration page
 app.get("/register", (req, res) => {
   const user = req.cookies["user_id"];
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user: users[user] };
+  const templateVars = { user: users[user] };
 
   if (user) {
     res.redirect(`/urls`); // redirect to /urls if user logged in
@@ -107,7 +127,7 @@ app.get("/register", (req, res) => {
 // login page
 app.get("/login", (req, res) => {
   const user = req.cookies["user_id"];
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user: users[user] };
+  const templateVars = { user: users[user] };
   
   if (user) {
     res.redirect(`/urls`); // redirect to /urls if user logged in
@@ -125,7 +145,7 @@ app.post("/urls", (req, res) => {
   if (user) {
     let longURL = req.body.longURL;
     let id = generateRandomString(); // generates short URL id
-    urlDatabase[id] = longURL; // saves key-value pair in urlDatabase
+    urlDatabase[id] = {longURL: longURL}; // saves key-value pair in urlDatabase
     res.redirect(`/urls/${id}`); // redirects to new page with new short url created
 
     console.log(urlDatabase);
@@ -139,7 +159,7 @@ app.post("/urls", (req, res) => {
 app.post("/urls/:id", (req, res) => {
   let id = req.params.id;
   let editURL = req.body.editURL;
-  urlDatabase[id] = editURL;
+  urlDatabase[id] = {longURL: editURL};
   res.redirect(`/urls/${id}`); // redirects to urls_show page
   console.log(urlDatabase);
 });
