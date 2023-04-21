@@ -2,6 +2,8 @@ const express = require("express");
 const cookieParser = require('cookie-parser');
 const app = express();
 const PORT = 8080; // default port 8080
+const bcrypt = require("bcryptjs");
+
 
 app.set("view engine", "ejs"); // tells the Express app to use EJS as its templating engine
 
@@ -215,9 +217,9 @@ app.post("/urls/:id/delete", (req, res) => {
 // login button
 app.post("/login", (req, res) => {
   // check if email is found in database
-  if (getUserByEmail(req.body.email, users)) { // true, check if password matches
+  if (getUserByEmail(req.body.email, users)) { // true, now check if password matches
     let user = getUserByEmail(req.body.email, users);
-    if (req.body.password === user.password) { // happy path, password matches
+    if (bcrypt.compareSync(req.body.password, user.password)) { // happy path, password matches
       let userID = getUserByEmail(req.body.email, users).id;
       res.cookie('user_id', userID);
       res.redirect('/urls'); // redirects to urls_index page
@@ -251,7 +253,7 @@ app.post("/register", (req, res) => {
     users[userID] = {
       id: userID,
       email: req.body.email,
-      password: req.body.password
+      password: bcrypt.hashSync(req.body.password, 10)
     };
     res.cookie('user_id', userID);
     console.log(users);
