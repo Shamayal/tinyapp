@@ -1,5 +1,5 @@
 const express = require("express");
-const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session')
 const app = express();
 const PORT = 8080; // default port 8080
 const bcrypt = require("bcryptjs");
@@ -9,7 +9,10 @@ app.set("view engine", "ejs"); // tells the Express app to use EJS as its templa
 
 // middleware which will make data from body of POST request readable
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ["userID"]
+}));
 
 // function to generate a random short URL ID
 const generateRandomString = () => {
@@ -29,15 +32,15 @@ const generateRandomString = () => {
 const urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.tsn.ca",
-    userID: "aJ48lW",
+    userID: "88SAhz",
   },
   i3BoGr: {
     longURL: "https://www.google.ca",
-    userID: "aJ48lW",
+    userID: "88SAhz",
   },
   b2xVn2: {
     longURL: "http://www.lighthouselabs.ca",
-    userID: "aJ48lW",
+    userID: "88SAhz",
   }
 };
 
@@ -52,10 +55,10 @@ const users = {
     email: "user2@example.com",
     password: "dishwasher-funk",
   },
-  aJ48lW: {
-    id: "aJ48lW",
+  '88SAhz': {
+    id: "88SAhz",
     email: "example@gmail.com",
-    password: "hello-world123*",
+    password: "$2a$10$a6duSfQtisyJj98k4PL/oe49DsVPkN1Wm9OG.tVfCMz0MWZN15x8i", //hello-world123*
   }
 };
 
@@ -94,7 +97,7 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const user = req.cookies["user_id"];
+  const user = req.session["user_id"];
   const templateVars = { urls: urlsForUser(user), user: users[user] };
 
   if (user) { // displays links associated with user cookie
@@ -105,7 +108,7 @@ app.get("/urls", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  const user = req.cookies["user_id"];
+  const user = req.session["user_id"];
   const templateVars = { user: users[user] };
 
   if (!user) {
@@ -116,7 +119,7 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
-  const user = req.cookies["user_id"];
+  const user = req.session["user_id"];
 
   //const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id].longURL, user: users[user] };
   const templateVars = { urls: urlsForUser(user), user: users[user], id: req.params.id , longURL: urlsForUser(user)[req.params.id]};
@@ -144,7 +147,7 @@ app.get("/u/:id", (req, res) => {
 
 // registration page
 app.get("/register", (req, res) => {
-  const user = req.cookies["user_id"];
+  const user = req.session["user_id"];
   const templateVars = { user: users[user] };
 
   if (user) {
@@ -156,7 +159,7 @@ app.get("/register", (req, res) => {
 
 // login page
 app.get("/login", (req, res) => {
-  const user = req.cookies["user_id"];
+  const user = req.session["user_id"];
   const templateVars = { user: users[user] };
   
   if (user) {
@@ -170,7 +173,7 @@ app.get("/login", (req, res) => {
 
 // adds new link to database and generates a random id
 app.post("/urls", (req, res) => {
-  const user = req.cookies["user_id"];
+  const user = req.session["user_id"];
 
   if (user) {
     let longURL = req.body.longURL;
@@ -187,7 +190,7 @@ app.post("/urls", (req, res) => {
 
 // edit url button
 app.post("/urls/:id", (req, res) => {
-  const user = req.cookies["user_id"];
+  const user = req.session["user_id"];
   let id = req.params.id;
 
   if (urlsForUser(user).id) {
@@ -202,7 +205,7 @@ app.post("/urls/:id", (req, res) => {
 
 // delete url button
 app.post("/urls/:id/delete", (req, res) => {
-  const user = req.cookies["user_id"];
+  const user = req.session["user_id"];
   let id = req.params.id;
 
   if (urlsForUser(user)[id]) {
@@ -221,7 +224,7 @@ app.post("/login", (req, res) => {
     let user = getUserByEmail(req.body.email, users);
     if (bcrypt.compareSync(req.body.password, user.password)) { // happy path, password matches
       let userID = getUserByEmail(req.body.email, users).id;
-      res.cookie('user_id', userID);
+      req.session.user_id = userID;
       res.redirect('/urls'); // redirects to urls_index page
     } else { // incorrect password
       res.status(403).send('Error 403: Incorrect password. Please try again.');
@@ -233,7 +236,7 @@ app.post("/login", (req, res) => {
 
 // logout button
 app.post("/logout", (req, res) => {
-  res.clearCookie('user_id'); // clears the user_id cookie
+  res.clearCookie("session"); // clears the user_id cookie
   res.redirect('/login'); // redirects to urls_index page
 });
 
@@ -255,7 +258,7 @@ app.post("/register", (req, res) => {
       email: req.body.email,
       password: bcrypt.hashSync(req.body.password, 10)
     };
-    res.cookie('user_id', userID);
+    req.session.user_id = userID;
     console.log(users);
     res.redirect('/urls'); // redirects to urls_index page
   }
