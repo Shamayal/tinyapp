@@ -119,10 +119,14 @@ app.get("/urls/:id", (req, res) => {
   //const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id].longURL, user: users[user] };
   const templateVars = { urls: urlsForUser(user), user: users[user], id: req.params.id , longURL: urlsForUser(user)[req.params.id]};
 
-  if (user) { // displays link
-    res.render("urls_show", templateVars);
+  if (user) {
+    if (urlsForUser(user)[req.params.id]) { // displays link
+      res.render("urls_show", templateVars);
+    } else {
+      res.status(401).send('Error 401: You are not authorized to view or edit other users\' URLs.'); // error message to display
+    }
   } else {
-    res.status(401).send('Error 401: You are not authorized to view or edit other users\' URLs.'); // error message to display
+    res.status(401).send('Error 401: Please login to view or edit URLs'); // error message to display
   }
 });
 
@@ -181,19 +185,31 @@ app.post("/urls", (req, res) => {
 
 // edit url button
 app.post("/urls/:id", (req, res) => {
+  const user = req.cookies["user_id"];
   let id = req.params.id;
-  let editURL = req.body.editURL;
-  urlDatabase[id] = {longURL: editURL};
-  res.redirect(`/urls/${id}`); // redirects to urls_show page
-  console.log(urlDatabase);
+
+  if (urlsForUser(user).id) {
+    let editURL = req.body.editURL;
+    urlDatabase[id] = {longURL: editURL, userID: user};
+    res.redirect(`/urls/${id}`); // redirects to urls_show page
+    console.log(urlDatabase);
+  } else {
+    res.status(401).send('Error 401: You are not authorized to edit this URL.'); // error message to display
+  }
 });
 
 // delete url button
 app.post("/urls/:id/delete", (req, res) => {
-  delete urlDatabase[req.params.id];
-  res.redirect('/urls'); // redirects to urls_index page
-  
-  console.log(urlDatabase);
+  const user = req.cookies["user_id"];
+  let id = req.params.id;
+
+  if (urlsForUser(user)[id]) {
+    delete urlDatabase[id];
+    res.redirect('/urls'); // redirects to urls_index page
+    console.log(urlDatabase);
+  } else {
+    res.status(401).send('Error 401: You are not authorized to delete this URL.'); // error message to display
+  }
 });
 
 // login button
