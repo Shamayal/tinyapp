@@ -60,15 +60,14 @@ const users = {
 };
 
 app.get("/", (req, res) => {
-  res.send("Hello!");
-});
+  const user = req.session["user_id"];
+  const templateVars = { urls: urlsForUser(user, urlDatabase), user: users[user] };
 
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
-
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
+  if (user) { 
+    res.redirect(`/urls`);
+  } else {
+    res.redirect(`/login`);
+  }
 });
 
 app.get("/urls", (req, res) => {
@@ -152,17 +151,11 @@ app.post("/urls", (req, res) => {
   if (user) {
     let longURL = req.body.longURL;
     let id = generateRandomString(); // generates short URL id
-    for (let shortURL in urlDatabase) {
-      // if url is already linked to the user, show error
-      if (urlDatabase[shortURL].longURL === longURL && urlDatabase[shortURL].userID === user) {
-        res.status(400).send('Error 400: You have already created a short URL for this link.');
-      } else {
-        urlDatabase[id] = // saves key-value pair in urlDatabase
-        {
-          longURL,
-          userID: user,
-        }
-      }
+
+    urlDatabase[id] = // saves key-value pair in urlDatabase
+    {
+      longURL,
+      userID: user,
     }
     res.redirect(`/urls/${id}`); // redirects to new page with new short url created
 
