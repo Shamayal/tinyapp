@@ -1,5 +1,5 @@
 const express = require("express");
-const cookieSession = require('cookie-session')
+const cookieSession = require('cookie-session');
 const app = express();
 const PORT = 8080; // default port 8080
 const bcrypt = require("bcryptjs");
@@ -23,11 +23,6 @@ const generateRandomString = () => {
   }
   return result;
 };
-
-// const urlDatabase = {
-//   "b2xVn2": "http://www.lighthouselabs.ca",
-//   "9sm5xK": "http://www.google.com"
-// };
 
 const urlDatabase = {
   b6UTxQ: {
@@ -74,15 +69,15 @@ const getUserByEmail = function(email, users) {
 
 // returns short and long URLs associated with the logged-in user
 const urlsForUser = function(id) {
- let userURLs = {};
- for (let tinyLink in urlDatabase) {
-  if (urlDatabase[tinyLink].userID === id) {
-    userURLs[tinyLink] = urlDatabase[tinyLink].longURL;
+  let userURLs = {};
+  for (let tinyLink in urlDatabase) {
+    if (urlDatabase[tinyLink].userID === id) {
+      userURLs[tinyLink] = urlDatabase[tinyLink].longURL;
+    }
   }
- }
- console.log(userURLs);
- return userURLs;
-}
+  console.log(userURLs);
+  return userURLs;
+};
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -224,7 +219,7 @@ app.post("/login", (req, res) => {
     let user = getUserByEmail(req.body.email, users);
     if (bcrypt.compareSync(req.body.password, user.password)) { // happy path, password matches
       let userID = getUserByEmail(req.body.email, users).id;
-      req.session.user_id = userID;
+      req.session["user_id"] = userID;
       res.redirect('/urls'); // redirects to urls_index page
     } else { // incorrect password
       res.status(403).send('Error 403: Incorrect password. Please try again.');
@@ -258,7 +253,7 @@ app.post("/register", (req, res) => {
       email: req.body.email,
       password: bcrypt.hashSync(req.body.password, 10)
     };
-    req.session.user_id = userID;
+    req.session["user_id"] = userID;
     console.log(users);
     res.redirect('/urls'); // redirects to urls_index page
   }
