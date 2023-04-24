@@ -186,6 +186,7 @@ app.post("/urls/:id", (req, res) => {
   // checks if user has authority to edit url
   if ((urlsForUser(user, urlDatabase))[id]) {
     let editURL = req.body.editURL;
+    // updates the database with new longURL link
     urlDatabase[id] = {longURL: editURL, userID: user};
     res.redirect('/urls');
   } else {
@@ -250,6 +251,7 @@ app.post("/register", (req, res) => {
   } else { 
     // user does not exist, create a new user
     let userID = generateRandomString();
+    // adds new user to users database
     users[userID] = {
       id: userID,
       email: req.body.email,
