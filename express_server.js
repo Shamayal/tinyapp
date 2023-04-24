@@ -5,8 +5,8 @@ const PORT = 8080; // default port 8080
 const bcrypt = require("bcryptjs");
 const { generateRandomString, getUserByEmail, urlsForUser } = require('./helpers');
 
-
-app.set("view engine", "ejs"); // tells the Express app to use EJS as its templating engine
+// Express app will use EJS as its templating engine
+app.set("view engine", "ejs");
 
 // middleware which will make data from body of POST request readable
 app.use(express.urlencoded({ extended: true }));
@@ -58,10 +58,12 @@ const users = {
   }
 };
 
+// GET Requests
+
+// checks if user is logged in based on cookies to redirect to the right page
 app.get("/", (req, res) => {
   const user = req.session["user_id"];
 
-  // if logged in, redirect to main page, otherwise redirect to login page
   if (user) {
     res.redirect(`/urls`);
   } else {
@@ -69,44 +71,51 @@ app.get("/", (req, res) => {
   }
 });
 
+// homepage that displays the shortened URLs saved by the user
 app.get("/urls", (req, res) => {
   const user = req.session["user_id"];
   const templateVars = { urls: urlsForUser(user, urlDatabase), user: users[user] };
 
-  if (user) { // displays links associated with user cookie
+  // checks if user is logged in based on cookies to show urls or error page
+  if (user) {
     res.render("urls_index", templateVars);
   } else {
-    res.status(401).send('Error 401: Please login or register to view URLs.'); // error message to display
+    res.status(401).send('Error 401: Please login or register to view URLs.');
   }
 });
 
+// create new TinyURL page 
 app.get("/urls/new", (req, res) => {
   const user = req.session["user_id"];
   const templateVars = { user: users[user] };
 
+  // checks if user is logged in based on cookies to show create page or login page
   if (!user) {
-    res.redirect(`/login`); // user not logged in, redirect to /login
+    res.redirect(`/login`);
   } else {
     res.render("urls_new", templateVars);
   }
 });
 
+// displays the short url id navigation link and edit option to change the long url
 app.get("/urls/:id", (req, res) => {
   const user = req.session["user_id"];
   const userURLs = urlsForUser(user, urlDatabase);
   const templateVars = { urls: userURLs, user: users[user], id: req.params.id , longURL: userURLs[req.params.id]};
 
+  // checks if user is logged in and is the short url id was created by that user
   if (user) {
-    if (userURLs[req.params.id]) { // if logged in, display link and edit form
+    if (userURLs[req.params.id]) {
       res.render("urls_show", templateVars);
     } else {
-      res.status(401).send('Error 401: You are not authorized to view or edit other users\' URLs.'); // error message if wrong user
+      res.status(401).send('Error 401: You are not authorized to view or edit other users\' URLs.');
     }
   } else {
-    res.status(401).send('Error 401: Please login to view or edit URLs'); // error message to display if not logged in
+    res.status(401).send('Error 401: Please login to view or edit URLs');
   }
 });
 
+// navigates to the link associated with the short url id
 app.get("/u/:id", (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[id].longURL;
@@ -114,16 +123,17 @@ app.get("/u/:id", (req, res) => {
   if (!longURL) {
     res.status(404).send(`Error 404: The URL does not exist in our database.`);
   }
-  res.redirect(longURL); // redirect to website
+  res.redirect(longURL);
 });
 
 // registration page
 app.get("/register", (req, res) => {
   const user = req.session["user_id"];
   const templateVars = { user: users[user] };
-
+    
+  // checks if user is logged in based on cookies to show homepage or registration page
   if (user) {
-    res.redirect(`/urls`); // redirect to /urls if user logged in
+    res.redirect(`/urls`);
   } else {
     res.render("urls_register", templateVars);
   }
@@ -134,86 +144,98 @@ app.get("/login", (req, res) => {
   const user = req.session["user_id"];
   const templateVars = { user: users[user] };
   
+  // checks if user is logged in based on cookies to show homepage or login page
   if (user) {
-    res.redirect(`/urls`); // redirect to /urls if user logged in
+    res.redirect(`/urls`);
   } else {
     res.render("urls_login", templateVars);
   }
 });
 
-// POST
+// POST Requests
 
 // adds new link to database and generates a random id
 app.post("/urls", (req, res) => {
   const user = req.session["user_id"];
 
+  // checks if user is logged in based on cookies to show homepage or error page
   if (user) {
     let longURL = req.body.longURL;
-    let id = generateRandomString(); // generates short URL id
+    // generates random id
+    let id = generateRandomString();
 
-    urlDatabase[id] = // saves key-value pair in urlDatabase
+    // saves key-value pair in urlDatabase
+    urlDatabase[id] =
     {
       longURL,
       userID: user,
     };
-    res.redirect(`/urls/${id}`); // redirects to new page with new short url created
+    // redirects to new page with new short url created
+    res.redirect(`/urls/${id}`);
 
-  } else { // if user not logged in, respond with message in command line
+  } else {
     res.status(401).send('Error 401: Unauthorized request. Please login to shorten URLs.');
   }
 });
 
-// edit url button
+// edit url route
 app.post("/urls/:id", (req, res) => {
   const user = req.session["user_id"];
   let id = req.params.id;
 
-  if ((urlsForUser(user, urlDatabase))[id]) { // checks if user has authority to edit url
+  // checks if user has authority to edit url
+  if ((urlsForUser(user, urlDatabase))[id]) {
     let editURL = req.body.editURL;
     urlDatabase[id] = {longURL: editURL, userID: user};
-    res.redirect('/urls'); // redirects to urls_index page
+    res.redirect('/urls');
   } else {
-    res.status(401).send('Error 401: You are not authorized to edit this URL.'); // error message to display
+    res.status(401).send('Error 401: You are not authorized to edit this URL.');
   }
 });
 
-// delete url button
+// delete url route
 app.post("/urls/:id/delete", (req, res) => {
   const user = req.session["user_id"];
   let id = req.params.id;
 
-  if (urlsForUser(user, urlDatabase)[id]) { // checks if user has authority to edit url
+  // checks if user has authority to delete url
+  if (urlsForUser(user, urlDatabase)[id]) {
     delete urlDatabase[id];
-    res.redirect('/urls'); // redirects to urls_index page
+    res.redirect('/urls');
   } else {
-    res.status(401).send('Error 401: You are not authorized to delete this URL.'); // error message to display
+    res.status(401).send('Error 401: You are not authorized to delete this URL.');
   }
 });
 
-// login button
+// login form route
 app.post("/login", (req, res) => {
   // check if email is found in database
-  if (getUserByEmail(req.body.email, users)) { // true, now check if password matches
+  if (getUserByEmail(req.body.email, users)) {
+    // true, now check if password matches database
     let user = getUserByEmail(req.body.email, users);
-    if (bcrypt.compareSync(req.body.password, user.password)) { // happy path, password matches
+    if (bcrypt.compareSync(req.body.password, user.password)) { 
+      // password matches, navitage to home page
       let userID = getUserByEmail(req.body.email, users).id;
       req.session["user_id"] = userID;
-      res.redirect('/urls'); // redirects to urls_index page
-    } else { // incorrect password
+      res.redirect('/urls');
+    } else { 
+      // email in database but password does not match 
       res.status(403).send('Error 403: Incorrect password. Please try again.');
     }
-  } else { // email can't be found
+  } else { 
+    // email is not found in database 
     res.status(403).send('Error 403: The user does not exist. Please register for a new account.');
   }
 });
 
-// logout button
+// logout route
 app.post("/logout", (req, res) => {
-  res.clearCookie("session"); // clears the user_id cookie
-  res.redirect('/login'); // redirects to urls_index page
+  // clear the session cookies and redirects to login page
+  res.clearCookie("session");
+  res.redirect('/login');
 });
 
-// registration form data
+// registration form route
 app.post("/register", (req, res) => {
  
   // check if email or password are empty strings
@@ -221,21 +243,25 @@ app.post("/register", (req, res) => {
     res.status(400).send('Error 400: Please enter a valid email or password.');
   }
 
-  // check if the user exists
-  if (getUserByEmail(req.body.email, users)) { // user exists, send error
+  // check if the email exists in database
+  if (getUserByEmail(req.body.email, users)) {
+    // send error, email already used
     res.status(400).send('Error 400: An account with the email already exists. Please enter another email.');
-  } else { // user does not exist, create a new user
-    let userID = generateRandomString(); // creates new user ID
+  } else { 
+    // user does not exist, create a new user
+    let userID = generateRandomString();
     users[userID] = {
       id: userID,
       email: req.body.email,
       password: bcrypt.hashSync(req.body.password, 10)
     };
+    // creates cookie and redirects to homepage
     req.session["user_id"] = userID;
-    res.redirect('/urls'); // redirects to urls_index page
+    res.redirect('/urls');
   }
 });
 
+// Lets user know they are connected to the server
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
