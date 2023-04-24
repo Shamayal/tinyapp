@@ -161,6 +161,10 @@ app.post("/urls", (req, res) => {
   // checks if user is logged in based on cookies to show homepage or error page
   if (user) {
     let longURL = req.body.longURL;
+    // checks if longURl is valid
+    if (longURL.slice(0, 7) !== "http://") {
+      longURL = "http://" + longURL;
+    }
     // generates random id
     let id = generateRandomString();
 
