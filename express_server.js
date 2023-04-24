@@ -118,12 +118,12 @@ app.get("/urls/:id", (req, res) => {
 // navigates to the link associated with the short url id
 app.get("/u/:id", (req, res) => {
   const id = req.params.id;
-  const longURL = urlDatabase[id].longURL;
+  const shortURL = urlDatabase[id];
 
-  if (!longURL) {
+  if (shortURL === undefined) {
     res.status(404).send(`Error 404: The URL does not exist in our database.`);
   }
-  res.redirect(longURL);
+  res.redirect(shortURL.longURL);
 });
 
 // registration page
